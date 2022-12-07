@@ -186,3 +186,14 @@ select * from configuracoes
 drop trigger validaDadosConfiguracoes
 
 drop table configuracoes
+
+create view contagemVotos as
+select count(usuario.id) as 'quantidade', alternativas.opcao, votacao.tipo, votos.fk_alternativa, votos.fk_usuario
+from votacao
+inner join alternativas
+on alternativas.fk_votacao = votacao.id
+inner join votos
+ on votos.fk_alternativa = alternativas.id
+ inner join usuario
+ on votos.fk_usuario = usuario.id
+ group by alternativas.opcao, votacao.tipo, votos.fk_alternativa, votos.fk_usuario
