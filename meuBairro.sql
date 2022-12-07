@@ -3,7 +3,7 @@ create database meuBairro
 create table configuracoes
 (
 	id integer primary key identity,
-	cpf varchar(11),
+	cpf varchar(14),
 	rg varchar(20),
 	email varchar(40),
 	senha varchar(30)
@@ -148,12 +148,12 @@ create table dependentes
 );
 go
 
-create trigger validaEmail
+create trigger validaDadosConfiguracoes
 on configuracoes
 instead of insert
 as
 
-	declare @cpf varchar(11)
+	declare @cpf varchar(14)
 	declare @rg varchar(20)
 	declare @email varchar(30)
 	declare @senha varchar(30)
@@ -163,7 +163,7 @@ as
 	select @email = (select inserted.email from inserted)
 	select @senha = (select inserted.senha from inserted)
 	
-	IF @email LIKE '%_@__%.__%'
+	IF @email LIKE '%_@__%.__%' and @cpf LIKE '%_._%._%-_%'
 	begin
 		
 		print('email válido')
@@ -178,9 +178,11 @@ as
 	end
 
 
-insert into configuracoes(cpf, rg, email, senha) values ('11111111122', '12312', 'fulano@gmail.com', '12345')
+insert into configuracoes(cpf, rg, email, senha) values ('111.222.333-44', '12312', 'fulano@gmail.com', '12345')
 --insert into configuracoes(cpf, rg, email, senha) values ('11111111122', '12312', 'fulanogmailcom', '12345') -- deve acusar erro
 
 select * from configuracoes
 
-drop trigger validaEmail;
+drop trigger validaDadosConfiguracoes
+
+drop table configuracoes
