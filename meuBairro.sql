@@ -166,7 +166,7 @@ as
 	IF @email LIKE '%_@__%.__%' and @cpf LIKE '%_._%._%-_%'
 	begin
 		
-		print('email v·lido')
+		print('dados v√°lidos!')
 		insert into configuracoes(cpf, rg, email, senha) values (@cpf, @rg, @email, @senha)
 
 	end
