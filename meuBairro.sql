@@ -61,8 +61,13 @@ create table servicos
 	nome varchar(30),
 	descricao varchar(50),
 	fk_usuario integer,
-	foreign key (fk_usuario) references usuario(id)
+	foreign key (fk_usuario) references usuario(id),
+	inicio datetime2 generated always as row start not null,
+	fim datetime2 generated always as row end not null,
+		period for system_time (inicio, fim)
 )
+with (system_versioning = ON (history_table = dbo.servicosHistorico))
+
 
 create table redesSociais
 (
@@ -87,8 +92,12 @@ create table votacao
 	id integer primary key identity,
 	tipo varchar(50),
 	fk_usuario integer,
-	foreign key (fk_usuario) references usuario(id)
+	foreign key (fk_usuario) references usuario(id),
+	inicio datetime2 generated always as row start not null,
+	fim datetime2 generated always as row end not null,
+		period for system_time (inicio, fim)
 )
+with (system_versioning = ON (history_table = dbo.votacaoHistorico))
 
 create table alternativas
 (
@@ -123,8 +132,12 @@ create table denuncia
 	fk_categoria integer,
 	fk_usuario integer,
 	foreign key (fk_categoria) references denunciaCategoria(id),
-	foreign key (fk_usuario) references usuario(id)
+	foreign key (fk_usuario) references usuario(id),
+	inicio datetime2 generated always as row start not null,
+	fim datetime2 generated always as row end not null,
+		period for system_time (inicio, fim)
 )
+with (system_versioning = ON (history_table = dbo.denunciasHistorico))
 
 create table dependentes
 (
@@ -132,4 +145,42 @@ create table dependentes
 	tipo varchar(20),
 	fk_usuario integer,
 	foreign key (fk_usuario) references usuario(id)
-)
+);
+go
+
+create trigger validaEmail
+on configuracoes
+instead of insert
+as
+
+	declare @cpf varchar(11)
+	declare @rg varchar(20)
+	declare @email varchar(30)
+	declare @senha varchar(30)
+
+	select @cpf = (select inserted.cpf from inserted)
+	select @rg = (select inserted.rg from inserted)
+	select @email = (select inserted.email from inserted)
+	select @senha = (select inserted.senha from inserted)
+	
+	IF @email LIKE '%_@__%.__%'
+	begin
+		
+		print('email válido')
+		insert into configuracoes(cpf, rg, email, senha) values (@cpf, @rg, @email, @senha)
+
+	end
+	ELSE
+	begin
+
+		rollback transaction
+
+	end
+
+
+insert into configuracoes(cpf, rg, email, senha) values ('11111111122', '12312', 'fulano@gmail.com', '12345')
+--insert into configuracoes(cpf, rg, email, senha) values ('11111111122', '12312', 'fulanogmailcom', '12345') -- deve acusar erro
+
+select * from configuracoes
+
+drop trigger validaEmail;
