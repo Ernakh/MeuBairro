@@ -188,12 +188,34 @@ drop trigger validaDadosConfiguracoes
 drop table configuracoes
 
 create view contagemVotos as
-select count(usuario.id) as 'quantidade', alternativas.opcao, votacao.tipo, votos.fk_alternativa, votos.fk_usuario
+select count(votos.fk_alternativa) as 'Quantidade', alternativas.opcao as 'Opção', 
+				votacao.tipo as 'Votação', votacao.id as 'ID da Votação'
 from votacao
-inner join alternativas
-on alternativas.fk_votacao = votacao.id
-inner join votos
- on votos.fk_alternativa = alternativas.id
- inner join usuario
- on votos.fk_usuario = usuario.id
- group by alternativas.opcao, votacao.tipo, votos.fk_alternativa, votos.fk_usuario
+	inner join alternativas
+		on alternativas.fk_votacao = votacao.id
+	inner join votos
+		on votos.fk_alternativa = alternativas.id
+	inner join usuario
+		on votos.fk_usuario = usuario.id
+ group by alternativas.opcao, votacao.tipo, votos.fk_alternativa, votacao.id
+ having votacao.id = (select top 1 votacao.id from votacao order by 1 desc)
+
+ select * from votacao 
+ insert into endereco values('Rua Tuiuti 874', 'Apto 203', 'Centro', 'Santa Maria', 'RS', '97015040') 
+insert into usuario values('Leo', null, 'jogador', '25/09/2001', null, 1, 1)
+insert into usuario values('Henrique', null, 'padeiro', '12/05/1998', null, 1, 1)
+insert into usuario values('Juliana', null, 'arquiteta', '05/12/1995', null, 1, 1)
+insert into usuario values('Isadora', null, 'militar', '18/03/1991', null, 1, 1)
+insert into usuario values('Kevin', null, 'segurança', '04/08/1984', null, 1, 1)
+
+insert into votacao (tipo, fk_usuario) values ('Destino de recursos', 1)
+insert into alternativas values('Pracinha', 3), ('Festa de fim de ano', 3), ('Piscina', 3)
+insert into votos values (2,1),(2,2),(1,3),(2,4),(1,5)
+
+insert into votacao (tipo, fk_usuario) values ('Início da festa de fim de ano', 1)
+insert into alternativas values('Meio-dia', 4), ('17:00', 4), ('22:00', 4)
+insert into votos values (4,1),(4,2),(5,3),(4,4),(6,5)
+
+select * from votacao
+select * from usuario
+select * from contagemVotos
