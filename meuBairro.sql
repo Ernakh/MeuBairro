@@ -139,12 +139,25 @@ create table denuncia
 )
 with (system_versioning = ON (history_table = dbo.denunciasHistorico))
 
+--create table dependentes -- antiga
+--(
+--	id integer primary key identity,
+--	tipo varchar(20),
+--	fk_usuario integer,
+--	foreign key (fk_usuario) references usuario(id)
+--);
+--go
+
 create table dependentes
 (
 	id integer primary key identity,
 	tipo varchar(20),
-	fk_usuario integer,
-	foreign key (fk_usuario) references usuario(id)
+	fk_responsavel_1 integer not null,
+	fk_responsavel_2 integer,
+	fk_dependente integer,
+	foreign key (fk_responsavel_1) references usuario(id),
+	foreign key (fk_responsavel_2) references usuario(id),
+	foreign key (fk_dependente) references usuario(id),
 );
 go
 
@@ -219,3 +232,44 @@ insert into votos values (4,1),(4,2),(5,3),(4,4),(6,5)
 select * from votacao
 select * from usuario
 select * from contagemVotos
+
+--PROCEDURE
+
+insert into usuario(nome) values ('Jorge')
+insert into usuario(nome) values ('Maria')
+
+update usuario set fk_conjuge = 2 where nome = 'Jorge'
+update usuario set fk_conjuge = 1 where nome = 'Maria'
+
+insert into usuario(nome) values ('Betinho')
+
+insert into dependentes(fk_responsavel_1, fk_responsavel_2, fk_dependente) values (1, 2, 3) --Jorge e Maria são os responsáveis de Betinho
+
+--select nome, fk_conjuge from usuario;
+
+--select * from dependentes
+go
+
+drop procedure descreveFamilia;
+go
+
+create procedure descreveFamilia(@id as int) as 
+(
+select usuario.id, usuario.nome, 'Dependente' as Relação 
+from dependentes
+inner join usuario
+	on usuario.id = dependentes.fk_dependente
+where dependentes.fk_responsavel_1 = @id or dependentes.fk_responsavel_2 = @id
+)
+union
+(
+select user2.id, user2.nome, 'Conjuge' as Relação 
+from usuario
+join usuario as user2 on user2.fk_conjuge = usuario.id
+where usuario.id = @id
+)
+
+go
+
+exec descreveFamilia 1 --usa o usuário de id como parâmetro
+go
